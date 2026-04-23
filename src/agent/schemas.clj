@@ -6,6 +6,16 @@
    [:intent     [:enum "question" "command" "chitchat"]]
    [:confidence [:and :double [:>= 0.0] [:<= 1.0]]]])
 
+(def llm-action-schema
+  [:or
+   [:map
+    [:action [:= "tool-call"]]
+    [:tool-name :string]
+    [:tool-args {:optional true} :map]]
+   [:map
+    [:action [:= "final-answer"]]
+    [:answer :string]]])
+
 (comment
   ;; Valid shapes.
   (m/validate classification-schema {:intent "question" :confidence 0.9})  ; => true
@@ -16,4 +26,9 @@
   (m/validate classification-schema {:intent "question" :confidence 1.5})  ; => false
 
   ;; Inspect errors.
-  (m/explain classification-schema {:intent "nonsense" :confidence 0.9}))
+  (m/explain classification-schema {:intent "nonsense" :confidence 0.9})
+
+  ;; llm-action-schema.
+  (m/validate llm-action-schema {:action "tool-call" :tool-name "get-current-datetime"})  ; => true
+  (m/validate llm-action-schema {:action "final-answer" :answer "It is 10am."})           ; => true
+  (m/validate llm-action-schema {:action "bogus"}))
