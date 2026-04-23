@@ -27,8 +27,10 @@ clojure -M:run
 
 ## REPL
 
+Start an nREPL server (connect with Calva, CIDER, or any nREPL client):
+
 ```
-clojure -M --repl
+clojure -M:nrepl
 ```
 
 Then load the namespace and call the entry point:
