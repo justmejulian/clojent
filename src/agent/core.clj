@@ -23,22 +23,25 @@
                  "{\"action\":\"final-answer\",\"answer\":\"YOUR ANSWER HERE\"}")})
 
 (defn agentic-turn
-  "Runs one user turn through the tool loop. Calls the LLM, dispatches any
-   tool calls, feeds results back, and repeats until a final-answer is
-   returned. Returns [answer-string updated-history]."
-  [history input]
-  (loop [msgs (conj history {:role "user" :content input})]
-    (println "[calling llm]")
-    (let [reply  (llm/call-llm msgs)
-          parsed (structured/parse-json reply)
-          msgs'  (conj msgs {:role "assistant" :content reply})]
-      (if (= "tool-call" (:action parsed))
-        (let [tool-name (:tool-name parsed)
-              _         (println "[calling tool]" tool-name)
-              result    (tools/run tool-name (:tool-args parsed))
-              msgs''    (conj msgs' {:role "user" :content (str "Tool result: " result)})]
-          (recur msgs''))
-        [(or (:answer parsed) reply) msgs']))))
+  "Runs one user turn through the tool loop. Calls call-fn with the message
+   history, dispatches any tool calls, feeds results back, and repeats until a
+   final-answer is returned. Returns [answer-string updated-history].
+
+   call-fn defaults to llm/call-llm; pass an alternative for testing."
+  ([history input] (agentic-turn history input llm/call-llm))
+  ([history input call-fn]
+   (loop [msgs (conj history {:role "user" :content input})]
+     (println "[calling llm]")
+     (let [reply  (call-fn msgs)
+           parsed (structured/parse-json reply)
+           msgs'  (conj msgs {:role "assistant" :content reply})]
+       (if (= "tool-call" (:action parsed))
+         (let [tool-name (:tool-name parsed)
+               _         (println "[calling tool]" tool-name)
+               result    (tools/run tool-name (:tool-args parsed))
+               msgs''    (conj msgs' {:role "user" :content (str "Tool result: " result)})]
+           (recur msgs''))
+         [(or (:answer parsed) reply) msgs'])))))
 
 (defn process-input
   "Runs one turn of the agentic loop. Returns [answer updated-history]."
