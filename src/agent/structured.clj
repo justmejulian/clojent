@@ -22,16 +22,19 @@
                    "Schema: " json-schema)}))
 
 (defn structured-call
-  "Calls the LLM and returns a validated Clojure map matching schema.
-   Retries up to max-retries times, feeding validation errors back to
-   the model so it can self-correct."
-  ([schema prompt] (structured-call schema prompt 3))
-  ([schema prompt max-retries]
+  "Calls call-fn with a messages vector and returns a validated Clojure map
+   matching schema. Retries up to max-retries times, feeding validation
+   errors back to the model so it can self-correct.
+
+   call-fn  — fn of messages → string (e.g. llm/call-llm).
+   max-retries — defaults to 3."
+  ([schema prompt call-fn] (structured-call schema prompt call-fn 3))
+  ([schema prompt call-fn max-retries]
    (let [system-msg (schema->system-message schema)
          user-msg   {:role "user" :content prompt}]
      (loop [messages [system-msg user-msg]
             retries  max-retries]
-       (let [reply   (llm/call-llm messages)
+       (let [reply   (call-fn messages)
              parsed  (parse-json reply)
              valid?  (and parsed (m/validate schema parsed))]
          (cond
@@ -53,13 +56,14 @@
                     (dec retries)))))))))
 
 (comment
-  (require '[agent.schemas :as schemas])
+  (require '[agent.llm :as llm]
+           '[agent.schemas :as schemas])
 
   ;; Happy path.
-  (structured-call schemas/classification-schema "What time is it in Zurich?")
+  (structured-call schemas/classification-schema "What time is it in Zurich?" llm/call-llm)
   ;; => {:intent "question" :confidence 0.95}
 
-  (structured-call schemas/classification-schema "Turn off the lights.")
+  (structured-call schemas/classification-schema "Turn off the lights." llm/call-llm)
   ;; => {:intent "command" :confidence 0.9}
 
   ;; Inspect the system message that gets sent.
