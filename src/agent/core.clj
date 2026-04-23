@@ -30,9 +30,13 @@
 (def exit-commands #{"quit" "exit"})
 
 (defn process-input
-  "Returns the agent's reply for a given user input string."
-  [input]
-  (call-llm [{:role "user" :content input}]))
+  "Appends the user input to history, calls the LLM, and returns the
+   updated history with the assistant's reply appended."
+  [history input]
+  (let [history'  (conj history {:role "user" :content input})  ; + user message
+        reply     (call-llm history')
+        history'' (conj history' {:role "assistant" :content reply})]  ; + assistant reply
+    history''))
 
 ;; --- I/O shell ---
 
@@ -45,15 +49,15 @@
 (defn chat-loop
   "Runs the read-eval-print loop until the user exits or EOF."
   []
-  (loop []
+  (loop [history []]
     (prompt)
     (let [input (read-line)]
       (cond
         (nil? input)          (println "\nGoodbye!")
         (exit-commands input) (println "Goodbye!")
-        :else (do
-                (println (process-input input))
-                (recur))))))
+        :else (let [history' (process-input history input)]
+                (println (:content (last history')))
+                (recur history'))))))
 
 ;; --- Entry point ---
 
@@ -66,8 +70,14 @@
 ;; --- REPL scratch ---
 
 (comment
+  ;; Single turn — still works.
   (call-llm [{:role "user" :content "Say hi in 3 words."}])
-  (process-input "What's 2+2?")
-  (call-llm [{:role "user"      :content "My name is Tom."}
-             {:role "assistant" :content "Nice to meet you, Tom!"}
-             {:role "user"      :content "What's my name?"}]))
+
+  ;; Build history across two turns and verify memory.
+  (def h1 (process-input [] "My name is Tom."))
+  ;; => [{:role "user" :content "My name is Tom."}
+  ;;     {:role "assistant" :content "..."}]
+
+  (def h2 (process-input h1 "What's my name?"))
+  ;; The model should answer "Tom."
+  (:content (last h2)))
