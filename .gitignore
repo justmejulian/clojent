@@ -1,0 +1,15 @@
+# Clojure
+.cpcache/
+target/
+classes/
+pom.xml
+
+# REPL
+.nrepl-port
+.nrepl-history
+
+# Editor
+.DS_Store
+.idea/
+*.iml
+.vscode/
