@@ -1,6 +1,7 @@
 {:paths ["src"]
  :deps {clj-http/clj-http {:mvn/version "3.13.0"}
-        metosin/jsonista  {:mvn/version "0.3.13"}}
+        metosin/jsonista  {:mvn/version "0.3.13"}
+        metosin/malli     {:mvn/version "0.16.4"}}
  :aliases
  {:run   {:main-opts ["-m" "agent.core"]}
   :nrepl {:extra-deps {nrepl/nrepl {:mvn/version "1.3.1"}}
