@@ -39,8 +39,9 @@
   (println "Echo agent ready. Type 'quit' to exit.")
   (chat-loop))
 
+;; --- REPL scratch ---
+
 (comment
-  (process-input "hi")   ;=> "You said: hi"
-  (exit-commands "quit") ;=> "quit"
-  (exit-commands "nope") ;=> nil
-  )
+  (process-input "hi")
+  (exit-commands "quit")
+  (exit-commands "nope"))

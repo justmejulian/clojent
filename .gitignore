@@ -8,6 +8,10 @@ pom.xml
 .nrepl-port
 .nrepl-history
 
+# Tooling
+.clj-kondo/
+.lsp/
+
 # Editor
 .DS_Store
 .idea/
