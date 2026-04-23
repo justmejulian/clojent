@@ -28,12 +28,15 @@
    returned. Returns [answer-string updated-history]."
   [history input]
   (loop [msgs (conj history {:role "user" :content input})]
+    (println "[calling llm]")
     (let [reply  (llm/call-llm msgs)
           parsed (structured/parse-json reply)
           msgs'  (conj msgs {:role "assistant" :content reply})]
       (if (= "tool-call" (:action parsed))
-        (let [result (tools/run (:tool-name parsed) (:tool-args parsed))
-              msgs'' (conj msgs' {:role "user" :content (str "Tool result: " result)})]
+        (let [tool-name (:tool-name parsed)
+              _         (println "[calling tool]" tool-name)
+              result    (tools/run tool-name (:tool-args parsed))
+              msgs''    (conj msgs' {:role "user" :content (str "Tool result: " result)})]
           (recur msgs''))
         [(or (:answer parsed) reply) msgs']))))
 
