@@ -29,52 +29,48 @@ Structured outputs use [Malli](https://github.com/metosin/malli) schemas. The sc
 
 ## Implementation guide
 
-The project was built incrementally. Each step below corresponds to one or more commits, so you can check out any point and see a working slice of the system.
+Building an agent breaks down into four concerns, each of which can be built and validated in isolation. This repo was built in that order — you can check out any commit to see a working slice.
 
-### Step 1 — Echo CLI (`4309686`)
+### 1. Get a runnable loop first
 
-Scaffold the project: `deps.edn`, `.gitignore`, and a `core.clj` whose `-main` reads a line, prints it back, and loops. No deps beyond Clojure itself. The goal is a runnable REPL loop before touching anything AI-related.
+Before touching anything AI-related, build the outer shell: a REPL loop that reads input and prints output. Keep it to a single file with no external deps.
 
-### Step 2 — Named functions (`da47826`)
+The point is to have something you can run, break, and fix cheaply. It also forces you to name the moving parts early — `exit-command?`, `chat-loop`, etc. — so that when you start adding LLM calls there's already a clear place for them to go. See `4309686` (init) → `da47826` (named functions).
 
-Extract the monolithic `-main` body into small, named functions: `exit-command?`, `process-input`, `prompt`, and `chat-loop`. Behavior is identical — the refactor just makes each concern independently evaluable in the REPL. Good habit before adding complexity.
+Set up an nREPL alias at this stage so every subsequent step can be developed interactively (`742d340`).
 
-### Step 3 — nREPL alias (`742d340`)
+### 2. Connect to the LLM
 
-Add a `:nrepl` alias to `deps.edn` so `clojure -M:nrepl` starts an nREPL server. From here, every further step is developed interactively through the REPL rather than restart-driven.
+Add an HTTP client and POST to the model API. The only thing this step adds is real responses — keep it minimal. Hardcode the model name and endpoint; there's no benefit in parameterizing them yet.
 
-### Step 4 — Ollama HTTP client (`39cda41`)
+Conversation history is a simple accumulator: each user turn appends `{:role "user" :content ...}`, each reply appends `{:role "assistant" :content ...}`, and the whole vector is sent with every request. Without this the model has no context between turns. See `39cda41` → `cf00575`.
 
-Add `hato` (HTTP) and `cheshire` (JSON) to `deps.edn`. Replace the echo body with a POST to `http://localhost:11434/api/chat`. The model name and endpoint are hardcoded. The agent now gives real LLM responses.
+### 3. Make output structured and reliable
 
-### Step 5 — Conversation history (`cf00575`)
+This is the step that turns an LLM into something you can program against. The model must reply with JSON matching a known schema. The technique:
 
-Pass the growing message vector into `chat-loop` as an accumulator. Each user turn appends a `{:role "user"}` message; each assistant reply appends a `{:role "assistant"}` message. The model now has context across turns.
+1. Define the expected shape as a [Malli](https://github.com/metosin/malli) schema
+2. Convert it to JSON Schema and inject it into the system prompt
+3. Parse the reply and validate it against the schema
+4. If validation fails, append the error as a user message and retry (up to 3 times)
 
-### Step 6 — Structured JSON output (`1f12475`)
+The retry loop is load-bearing. Models occasionally produce malformed JSON or miss required fields — feeding the error back and letting the model self-correct is simpler and more reliable than any post-processing heuristic. See `1f12475`.
 
-Add [Malli](https://github.com/metosin/malli) to `deps.edn`. Define a schema for the expected reply shape, convert it to JSON Schema, and inject it into a system prompt. Parse the model's reply as JSON and validate it. If validation fails, append the error as a user message and retry — up to 3 times. This is the core technique that makes the agent reliable enough to act on LLM output programmatically.
+Once the schema logic grows beyond a few functions, split it into its own namespace to keep `core.clj` readable (`fcbd537`). Add tests for the schema validation and retry path at this point — they run without Ollama and give a fast feedback loop (`ed4c896`).
 
-### Step 7 — Extract modules (`fcbd537`)
+### 4. Add tool calling
 
-`core.clj` has grown large. Split it into focused namespaces:
+Extend the schema to allow two reply shapes: `tool-call` (tool name + arguments) or `final-answer` (plain string). The agent loop becomes:
 
-- `agent.llm` — HTTP call to Ollama
-- `agent.schemas` — Malli schema definitions
-- `agent.structured` — JSON parsing, schema→prompt, structured call with retries
-- `agent.core` — chat loop and entry point (now thin)
+```
+call LLM → tool-call? → execute, append result, repeat
+                ↓ final-answer
+           print and wait for next input
+```
 
-### Step 8 — Tests (`ed4c896`)
+Start with one trivial tool (e.g. `get-current-datetime`) to verify the loop works end-to-end before adding anything complex (`208a3fc`). Add a `bash` tool next — it lets the model run arbitrary shell commands, which is powerful enough to cover most tasks without building bespoke tools for each one (`702feac`).
 
-Add `clojure.test` tests for the three extracted modules. Tests cover schema validation, JSON parsing edge cases, and the retry logic in `structured`. Running `clojure -M:test` gives a fast feedback loop without needing Ollama.
-
-### Step 9 — Tool calling (`208a3fc`, `59eb07c`)
-
-Extend the Malli schema to allow two reply shapes: `tool-call` (a tool name + arguments) and `final-answer` (a plain string). Add `agent.tools` with a registry map and a `dispatch` function. Change `agent.core` to loop until the model emits `final-answer`: on each `tool-call` it executes the tool, appends the result as a user message, and calls the LLM again. The first tool registered is `get-current-datetime`.
-
-### Step 10 — Bash tool (`702feac`)
-
-Add a `bash` tool to the registry that runs an arbitrary shell command via `clojure.java.shell/sh` and returns stdout (or stderr on failure). The model can now read files, run tests, and inspect the environment — completing the agent loop.
+Tools are just functions in a registry map. Adding a new tool means writing a function and registering it; the schema and loop don't change.
 
 ## Requirements
 
