@@ -2,6 +2,8 @@
 
 A minimal Clojure AI agent, built to learn Clojure and how LLM coding agents work.
 
+2 🦜 1 🪨
+
 > This project was heavily AI-assisted — built with Claude as a pair-programming tool to explore and understand Clojure idioms and agent architecture. The code and implementation guide reflect that learning process.
 
 Runs locally via [Ollama](https://ollama.com/) — no API keys required.
