@@ -54,26 +54,44 @@
   {"get-current-datetime"
    {:name        "get-current-datetime"
     :description "Returns the current date and time."
+    :parameters  {:type "object" :properties {} :required []}
     :fn          (fn [_args] (now))}
 
    "bash"
    {:name        "bash"
-    :description "Runs a bash command. Args: {\"command\": \"<shell command string>\"}. Returns stdout on success, or stderr on failure."
+    :description "Runs a bash command. Returns stdout on success, or stderr on failure."
+    :parameters  {:type       "object"
+                  :properties {:command {:type        "string"
+                                         :description "The shell command to run."}}
+                  :required   ["command"]}
     :fn          (fn [{:keys [command]}] (bash command))}
 
    "read-file"
    {:name        "read-file"
-    :description "Reads a file and returns its content. Args: {\"path\": \"<file path>\"}."
+    :description "Reads a file and returns its content."
+    :parameters  {:type       "object"
+                  :properties {:path {:type        "string"
+                                      :description "Absolute or relative path to the file."}}
+                  :required   ["path"]}
     :fn          (fn [{:keys [path]}] (read-file path))}
 
    "write-file"
    {:name        "write-file"
-    :description "Creates or overwrites a file with the given content. Args: {\"path\": \"<file path>\", \"content\": \"<text>\"}."
+    :description "Creates or overwrites a file with the given content."
+    :parameters  {:type       "object"
+                  :properties {:path    {:type "string" :description "Path to write."}
+                               :content {:type "string" :description "Text to write."}}
+                  :required   ["path" "content"]}
     :fn          (fn [{:keys [path content]}] (write-file path content))}
 
    "edit-file"
    {:name        "edit-file"
-    :description "Replaces the first occurrence of old-string with new-string in a file. Args: {\"path\": \"<file path>\", \"old-string\": \"<text to replace>\", \"new-string\": \"<replacement>\"}."
+    :description "Replaces the first occurrence of old-string with new-string in a file."
+    :parameters  {:type       "object"
+                  :properties {:path       {:type "string" :description "Path of file to edit."}
+                               :old-string {:type "string" :description "Exact text to replace."}
+                               :new-string {:type "string" :description "Replacement text."}}
+                  :required   ["path" "old-string" "new-string"]}
     :fn          (fn [{:keys [path old-string new-string]}] (edit-file path old-string new-string))}})
 
 ;; --- Dispatch ---
@@ -85,6 +103,19 @@
   (if-let [tool (get registry tool-name)]
     ((:fn tool) args)
     (str "Unknown tool: " tool-name)))
+
+;; --- API shape ---
+
+(defn tools-for-api
+  "Returns tools in the shape Ollama's /api/chat expects:
+   [{:type \"function\" :function {:name ... :description ... :parameters ...}}]"
+  []
+  (mapv (fn [[_ {:keys [name description parameters]}]]
+          {:type     "function"
+           :function {:name        name
+                      :description description
+                      :parameters  parameters}})
+        registry))
 
 ;; --- Description for system prompt ---
 

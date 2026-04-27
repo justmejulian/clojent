@@ -1,7 +1,7 @@
 (ns agent.tools-test
   (:require [clojure.test :refer [deftest is testing]]
             [clojure.string :as str]
-            [agent.tools :refer [now bash read-file write-file edit-file run describe-all]]))
+            [agent.tools :refer [now bash read-file write-file edit-file run describe-all tools-for-api registry]]))
 
 ;; --- now ---
 
@@ -74,3 +74,21 @@
       (is (str/includes? result "read-file"))
       (is (str/includes? result "write-file"))
       (is (str/includes? result "edit-file")))))
+
+;; --- registry schema ---
+
+(deftest all-tools-have-parameters-schema
+  (testing "every tool has a :parameters map with :type \"object\""
+    (doseq [[_ tool] registry]
+      (is (map? (:parameters tool)) (str (:name tool) " missing :parameters"))
+      (is (= "object" (get-in tool [:parameters :type])) (str (:name tool) " :type not object")))))
+
+;; --- tools-for-api ---
+
+(deftest tools-for-api-shape
+  (testing "returns vector of function-type descriptors"
+    (let [result (tools-for-api)]
+      (is (vector? result))
+      (is (every? #(= "function" (:type %)) result))
+      (is (every? #(string? (get-in % [:function :name])) result))
+      (is (every? #(map? (get-in % [:function :parameters])) result)))))

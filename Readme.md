@@ -10,14 +10,13 @@ Runs locally via [Ollama](https://ollama.com/) — no API keys required.
 
 ## How it works
 
-The agent runs a tool loop for each user turn:
+The agent uses native Ollama tool calling. For each user turn:
 
-1. Build a conversation with a system prompt describing available tools and response format
-2. Call the LLM — must reply with JSON (`tool-call` or `final-answer`)
-3. If `tool-call`: execute the tool, append the result, go to 2
-4. If `final-answer`: print the answer and wait for the next user input
+1. Send the conversation history + tool definitions (JSON Schema) to the LLM
+2. If the response has `tool_calls`: execute each tool, append `{:role "tool" :content result}`, repeat from 2
+3. If the response is plain text: print and wait for the next user input
 
-Structured outputs use [Malli](https://github.com/metosin/malli) schemas. The schema is converted to JSON Schema and injected into the system prompt. If the reply fails validation, the error is fed back to the model and it retries (up to 3 times).
+Structured outputs (separate from the tool loop) use [Malli](https://github.com/metosin/malli) schemas. The schema is converted to JSON Schema and injected into the system prompt. If the reply fails validation, the error is fed back to the model and it retries (up to 3 times).
 
 ## Architecture
 
@@ -26,7 +25,7 @@ Structured outputs use [Malli](https://github.com/metosin/malli) schemas. The sc
 | `agent.core`       | Chat loop, agentic turn logic, entry point                   |
 | `agent.llm`        | HTTP client for Ollama                                       |
 | `agent.tools`      | Tool registry (`get-current-datetime`, `bash`)               |
-| `agent.schemas`    | Malli schemas for LLM responses                              |
+| `agent.schemas`    | Malli schemas for structured output                          |
 | `agent.structured` | JSON parsing, schema→system-prompt, structured call with retries |
 
 ## Implementation guide
@@ -62,17 +61,21 @@ Once the schema logic grows beyond a few functions, split it into its own namesp
 
 ### 4. Add tool calling
 
-Extend the schema to allow two reply shapes: `tool-call` (tool name + arguments) or `final-answer` (plain string). The agent loop becomes:
+Use the model API's native tool calling. Pass tool definitions (name, description, JSON Schema for inputs) in the `tools` request parameter. The model replies with a `tool_calls` array instead of content when it wants to use a tool.
+
+The agent loop:
 
 ```
-call LLM → tool-call? → execute, append result, repeat
-                ↓ final-answer
+call LLM → tool_calls present? → execute each, append {:role "tool" :content result}, repeat
+                    ↓ plain text
            print and wait for next input
 ```
 
 Start with one trivial tool (e.g. `get-current-datetime`) to verify the loop works end-to-end before adding anything complex (`208a3fc`). Add a `bash` tool next — it lets the model run arbitrary shell commands, which is powerful enough to cover most tasks without building bespoke tools for each one (`702feac`).
 
-Tools are just functions in a registry map. Adding a new tool means writing a function and registering it; the schema and loop don't change.
+Each tool in the registry has a `:name`, `:description`, `:parameters` (JSON Schema), and `:fn`. The loop dispatches by name; adding a tool means writing a function and registering it — the loop doesn't change.
+
+See also: [Ollama tool calling docs](https://docs.ollama.com/capabilities/tool-calling).
 
 ## Requirements
 

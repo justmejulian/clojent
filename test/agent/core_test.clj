@@ -21,37 +21,28 @@
       (is (= "system" (:role msg)))
       (is (string? (:content msg))))))
 
-(deftest system-message-content
-  (testing "mentions registered tools"
-    (let [content (:content (system-message))]
-      (is (str/includes? content "get-current-datetime"))
-      (is (str/includes? content "bash"))))
-  (testing "includes JSON response format instructions"
-    (let [content (:content (system-message))]
-      (is (str/includes? content "JSON"))
-      (is (str/includes? content "tool-call"))
-      (is (str/includes? content "final-answer")))))
-
 ;; --- agentic-turn ---
 
-(def ^:private final-answer-reply
-  "{\"action\":\"final-answer\",\"answer\":\"42\"}")
+(def ^:private final-answer-msg
+  {:role "assistant" :content "42" :tool_calls []})
 
-(def ^:private tool-call-reply
-  "{\"action\":\"tool-call\",\"tool-name\":\"get-current-datetime\",\"tool-args\":{}}")
+(def ^:private tool-call-msg
+  {:role       "assistant"
+   :content    nil
+   :tool_calls [{:function {:name "get-current-datetime" :arguments {}}}]})
 
 (defn- queued-call-fn
-  "Returns a call-fn that returns replies from replies-vec in order."
+  "Returns a call-fn [msgs tools] that returns message maps from replies-vec in order."
   [replies-vec]
   (let [queue (atom replies-vec)]
-    (fn [_msgs]
+    (fn [_msgs _tools]
       (let [reply (first @queue)]
         (swap! queue rest)
         reply))))
 
 (deftest agentic-turn-final-answer-on-first-call
   (testing "returns answer string and appended history"
-    (let [call-fn (constantly final-answer-reply)
+    (let [call-fn (fn [_msgs _tools] final-answer-msg)
           [answer history] (agentic-turn [] "What is 6 times 7?" call-fn)]
       (is (= "42" answer))
       (is (= 2 (count history)))
@@ -60,17 +51,20 @@
 
 (deftest agentic-turn-tool-call-then-final-answer
   (testing "dispatches tool, appends result, then returns final answer"
-    (let [call-fn (queued-call-fn [tool-call-reply final-answer-reply])
+    (let [call-fn (queued-call-fn [tool-call-msg final-answer-msg])
           [answer history] (agentic-turn [] "What time is it?" call-fn)]
       (is (= "42" answer))
-      ;; user → assistant(tool-call) → user(tool-result) → assistant(final-answer)
+      ;; user → assistant(tool-call) → tool(result) → assistant(final-answer)
       (is (= 4 (count history)))
-      (is (str/includes? (:content (nth history 2)) "Tool result:")))))
+      (is (= "tool" (:role (nth history 2))))
+      (is (= "get-current-datetime" (:tool_name (nth history 2)))))))
 
 (deftest agentic-turn-unknown-tool-continues-loop
   (testing "unknown tool returns error string but loop continues to final answer"
-    (let [bad-tool-reply "{\"action\":\"tool-call\",\"tool-name\":\"no-such-tool\",\"tool-args\":{}}"
-          call-fn        (queued-call-fn [bad-tool-reply final-answer-reply])
+    (let [bad-tool-msg {:role       "assistant"
+                        :content    nil
+                        :tool_calls [{:function {:name "no-such-tool" :arguments {}}}]}
+          call-fn      (queued-call-fn [bad-tool-msg final-answer-msg])
           [answer history] (agentic-turn [] "Do something" call-fn)]
       (is (= "42" answer))
       (is (str/includes? (:content (nth history 2)) "Unknown tool:")))))

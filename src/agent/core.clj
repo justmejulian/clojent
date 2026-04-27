@@ -1,6 +1,5 @@
 (ns agent.core
   (:require [agent.llm :as llm]
-            [agent.structured :as structured]
             [agent.tools :as tools])
   (:gen-class))
 
@@ -9,39 +8,40 @@
 (def exit-commands #{"quit" "exit"})
 
 (defn system-message
-  "Builds the system message that describes available tools and the two
-   JSON response formats the LLM must use."
+  "Builds the system message that sets the assistant's persona."
   []
   {:role    "system"
-   :content (str "You are a helpful assistant with access to tools.\n\n"
-                 "Available tools:\n"
-                 (tools/describe-all) "\n\n"
-                 "Always reply with ONLY valid JSON — no prose, no markdown, no code fences.\n\n"
-                 "To call a tool:\n"
-                 "{\"action\":\"tool-call\",\"tool-name\":\"NAME\",\"tool-args\":{}}\n\n"
-                 "When you have the final answer:\n"
-                 "{\"action\":\"final-answer\",\"answer\":\"YOUR ANSWER HERE\"}")})
+   :content "You are a helpful assistant with access to tools. Use them whenever they would help answer the user's question."})
 
 (defn agentic-turn
   "Runs one user turn through the tool loop. Calls call-fn with the message
-   history, dispatches any tool calls, feeds results back, and repeats until a
-   final-answer is returned. Returns [answer-string updated-history].
+   history and tool definitions, dispatches any tool calls, feeds results back,
+   and repeats until the model returns a plain text answer.
+   Returns [answer-string updated-history].
 
-   call-fn defaults to llm/call-llm; pass an alternative for testing."
-  ([history input] (agentic-turn history input llm/call-llm))
+   call-fn defaults to llm/call-llm-with-tools; pass an alternative for testing."
+  ([history input] (agentic-turn history input llm/call-llm-with-tools))
   ([history input call-fn]
-   (loop [msgs (conj history {:role "user" :content input})]
-     (println "[calling llm]")
-     (let [reply  (call-fn msgs)
-           parsed (structured/parse-json reply)
-           msgs'  (conj msgs {:role "assistant" :content reply})]
-       (if (= "tool-call" (:action parsed))
-         (let [tool-name (:tool-name parsed)
-               _         (println "[calling tool]" tool-name)
-               result    (tools/run tool-name (:tool-args parsed))
-               msgs''    (conj msgs' {:role "user" :content (str "Tool result: " result)})]
-           (recur msgs''))
-         [(or (:answer parsed) reply) msgs'])))))
+   (let [tool-defs (tools/tools-for-api)]
+     (loop [msgs (conj history {:role "user" :content input})]
+       (println "[calling llm]")
+       (let [assistant-msg (call-fn msgs tool-defs)
+             msgs'         (conj msgs assistant-msg)]
+         (if-let [tool-calls (seq (:tool_calls assistant-msg))]
+           (let [msgs'' (reduce
+                          (fn [acc tc]
+                            (let [fn-name (:name (:function tc))
+                                  args    (:arguments (:function tc))
+                                  _       (println "[calling tool]" fn-name)
+                                  result  (try
+                                            (tools/run fn-name args)
+                                            (catch Exception e
+                                              (str "Tool error: " (.getMessage e))))]
+                              (conj acc {:role "tool" :tool_name fn-name :content result})))
+                          msgs'
+                          tool-calls)]
+             (recur msgs''))
+           [(or (:content assistant-msg) "") msgs']))))))
 
 (defn process-input
   "Runs one turn of the agentic loop. Returns [answer updated-history]."
