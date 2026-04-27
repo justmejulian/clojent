@@ -30,6 +30,8 @@ Structured outputs (separate from the tool loop) use [Malli](https://github.com/
 
 ## Implementation guide
 
+> Inspired by [How to Build an Agent](https://ampcode.com/notes/how-to-build-an-agent) by Thorsten Ball.
+
 Building an agent breaks down into four concerns, each of which can be built and validated in isolation. This repo was built in that order — you can check out any commit to see a working slice.
 
 ### 1. Get a runnable loop first
@@ -99,6 +101,22 @@ clojure -M:run
 ```
 
 Type `quit` or `exit` to stop. The agent has access to the current time and can run bash commands.
+
+```
+❯ clojure -M:run
+Agent ready. Type 'quit' to exit.
+> My name is Julian
+[calling llm]
+Hello, Julian!
+> add my name to the readme in this folder
+[calling llm]
+[calling tool] bash
+[calling llm]
+[calling tool] edit-file
+[calling llm]
+Your name has been added to the README.md file.
+>
+```
 
 ## Test
 
