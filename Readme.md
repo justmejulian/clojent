@@ -84,14 +84,14 @@ See also: [Ollama tool calling docs](https://docs.ollama.com/capabilities/tool-c
 - [Clojure CLI](https://clojure.org/guides/install_clojure) + JDK 21
 - [Ollama](https://ollama.com/) running locally with a model that supports tool calling
 
-The model must support tool calling — not all do. See [ollama.com/search?c=tools](https://ollama.com/search?c=tools) for compatible models. This repo uses [`qwen3`](https://ollama.com/library/qwen3).
+The model must support tool calling — not all do. See [ollama.com/search?c=tools](https://ollama.com/search?c=tools) for compatible models. This repo uses `gemma4:e2b-mlx`.
 
 ```
 brew install clojure/tools/clojure
 brew install openjdk@21
 brew install ollama
 
-ollama pull qwen3:8b
+ollama pull gemma4:e2b-mlx
 ```
 
 ## Run
@@ -129,7 +129,21 @@ clojure -M:test
 Start an nREPL server (connects with Calva, CIDER, or any nREPL client):
 
 ```
-clojure -M:nrepl
+clj -M:nrepl
 ```
 
-Each namespace has a `(comment ...)` block at the bottom with ready-to-run examples for exploring that module interactively.
+### Usage example
+
+Load `agent.core` and call the pure entry point directly:
+
+```clojure
+(require '[agent.core :as core] :reload)
+
+(core/process-input
+ [{:role "system" :content "You are terse."}
+  {:role "user" :content "My name is Julian"}
+  {:role "assistant" :content "Got it, Julian."}]
+ "What is my name?")
+```
+
+Each namespace also has a `(comment ...)` block at the bottom with ready-to-run examples for exploring that module interactively.
