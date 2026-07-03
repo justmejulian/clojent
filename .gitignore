@@ -17,3 +17,10 @@ pom.xml
 .idea/
 *.iml
 .vscode/
+
+*.html
+
+# Notebooks
+notebooks/.venv/
+notebooks/.ipynb_checkpoints/
+.ipynb_checkpoints/

@@ -96,6 +96,9 @@
 
 ;; --- Dispatch ---
 
+;; Note: we trust the LLM to supply correct args. Validation against
+;; :parameters :required is possible but not done here.
+
 (defn run
   "Executes a tool by name, passing args map. Returns the result as a string.
    Returns an error string if the tool is unknown."
@@ -147,7 +150,7 @@
 
   ;; Dispatch via registry.
   (run "get-current-datetime" {})
-  (run "bash" {"command" "uname -a"})
+  (run "bash" {:command "uname -a"})
   (run "read-file" {:path "/tmp/clojent-test.txt"})
   (run "write-file" {:path "/tmp/clojent-test.txt" :content "hi\n"})
   (run "edit-file" {:path "/tmp/clojent-test.txt" :old-string "hi" :new-string "bye"})

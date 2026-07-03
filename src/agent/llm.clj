@@ -3,7 +3,7 @@
             [jsonista.core :as json]))
 
 (def ollama-url "http://localhost:11434/api/chat")
-(def model-name "qwen3:8b")
+(def model-name "gemma4:e2b-mlx")
 
 (def mapper
   (json/object-mapper {:decode-key-fn keyword}))
@@ -15,8 +15,7 @@
   (let [body     {:model    model-name
                   :messages messages
                   :stream   false
-                  :think    false
-                  :format   "json"}
+                  :think    false}
         response (http/post ollama-url
                             {:headers {"Content-Type" "application/json"}
                              :body    (json/write-value-as-string body)})
