@@ -18,8 +18,6 @@ The agent uses native Ollama tool calling. For each user turn:
 2. If the response has `tool_calls`: execute each tool, append `{:role "tool" :content result}`, repeat from 2
 3. If the response is plain text: print and wait for the next user input
 
-Structured outputs (separate from the tool loop) use [Malli](https://github.com/metosin/malli) schemas. The schema is converted to JSON Schema and injected into the system prompt. If the reply fails validation, the error is fed back to the model and it retries (up to 3 times).
-
 ## Architecture
 
 | Namespace          | Responsibility                                               |
@@ -27,7 +25,6 @@ Structured outputs (separate from the tool loop) use [Malli](https://github.com/
 | `agent.core`       | Chat loop, agentic turn logic, entry point                   |
 | `agent.llm`        | HTTP client for Ollama                                       |
 | `agent.tools`      | Tool registry (`get-current-datetime`, `bash`)               |
-| `agent.schemas`    | Malli schemas for structured output                          |
 | `agent.structured` | JSON parsing, schema→system-prompt, structured call with retries |
 
 ## Implementation guide
@@ -50,20 +47,7 @@ Add an HTTP client and POST to the model API. The only thing this step adds is r
 
 Conversation history is a simple accumulator: each user turn appends `{:role "user" :content ...}`, each reply appends `{:role "assistant" :content ...}`, and the whole vector is sent with every request. Without this the model has no context between turns. See `39cda41` → `cf00575`.
 
-### 3. Make output structured and reliable
-
-This is the step that turns an LLM into something you can program against. The model must reply with JSON matching a known schema. The technique:
-
-1. Define the expected shape as a [Malli](https://github.com/metosin/malli) schema
-2. Convert it to JSON Schema and inject it into the system prompt
-3. Parse the reply and validate it against the schema
-4. If validation fails, append the error as a user message and retry (up to 3 times)
-
-The retry loop is load-bearing. Models occasionally produce malformed JSON or miss required fields — feeding the error back and letting the model self-correct is simpler and more reliable than any post-processing heuristic. See `1f12475`.
-
-Once the schema logic grows beyond a few functions, split it into its own namespace to keep `core.clj` readable (`fcbd537`). Add tests for the schema validation and retry path at this point — they run without Ollama and give a fast feedback loop (`ed4c896`).
-
-### 4. Add tool calling
+### 3. Add tool calling
 
 Use the model API's native tool calling. Pass tool definitions (name, description, JSON Schema for inputs) in the `tools` request parameter. The model replies with a `tool_calls` array instead of content when it wants to use a tool.
 
