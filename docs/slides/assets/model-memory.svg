@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 310" font-family="system-ui, -apple-system, sans-serif">
+  <!-- scale: 35 px per GB, x0 = 20 -->
+
+  <!-- 24 GB limit -->
+  <line x1="860" y1="38" x2="860" y2="240" stroke="#f38ba8" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="860" y="26" text-anchor="middle" font-size="18" fill="#f38ba8" font-weight="600">24 GB</text>
+
+  <!-- bar 1: qwen3-coder 30B-A3B -->
+  <text x="20" y="56" font-size="19" fill="#cdd6f4">qwen3-coder:30b-a3b (Q4) — tight fit</text>
+  <rect x="20" y="66" width="595" height="46" fill="#89b4fa" fill-opacity="0.85"/>
+  <text x="317" y="95" text-anchor="middle" font-size="18" fill="#1e1e2e" font-weight="600">weights 17 GB</text>
+  <rect x="615" y="66" width="70" height="46" fill="#94e2d5" fill-opacity="0.85"/>
+  <text x="650" y="95" text-anchor="middle" font-size="16" fill="#1e1e2e" font-weight="600">KV 2</text>
+  <rect x="685" y="66" width="175" height="46" fill="#585b70"/>
+  <text x="772" y="95" text-anchor="middle" font-size="16" fill="#cdd6f4">macOS ~5 GB</text>
+
+  <!-- bar 2: qwen2.5-coder 14B -->
+  <text x="20" y="166" font-size="19" fill="#cdd6f4">qwen2.5-coder:14b (Q4) — headroom</text>
+  <rect x="20" y="176" width="332" height="46" fill="#89b4fa" fill-opacity="0.85"/>
+  <text x="186" y="205" text-anchor="middle" font-size="18" fill="#1e1e2e" font-weight="600">weights 9.5 GB</text>
+  <rect x="352" y="176" width="70" height="46" fill="#94e2d5" fill-opacity="0.85"/>
+  <text x="387" y="205" text-anchor="middle" font-size="16" fill="#1e1e2e" font-weight="600">KV 2</text>
+  <rect x="422" y="176" width="175" height="46" fill="#585b70"/>
+  <text x="509" y="205" text-anchor="middle" font-size="16" fill="#cdd6f4">macOS ~5 GB</text>
+  <rect x="597" y="176" width="263" height="46" fill="none" stroke="#a6e3a1" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="728" y="205" text-anchor="middle" font-size="16" fill="#a6e3a1">free ~7.5 GB</text>
+
+  <!-- legend -->
+  <rect x="20" y="266" width="22" height="18" fill="#89b4fa" fill-opacity="0.85"/>
+  <text x="50" y="281" font-size="16" fill="#a6adc8">weights (Q4_K_M)</text>
+  <rect x="220" y="266" width="22" height="18" fill="#94e2d5" fill-opacity="0.85"/>
+  <text x="250" y="281" font-size="16" fill="#a6adc8">KV cache (~32K ctx)</text>
+  <rect x="440" y="266" width="22" height="18" fill="#585b70"/>
+  <text x="470" y="281" font-size="16" fill="#a6adc8">system + apps</text>
+</svg>

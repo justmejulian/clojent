@@ -8,6 +8,8 @@ A minimal Clojure AI agent, built to learn Clojure and how LLM coding agents wor
 
 Runs locally via [Ollama](https://ollama.com/) — no API keys required.
 
+Slides: [`docs/slides/slides.md`](docs/slides/slides.md)
+
 ## How it works
 
 The agent uses native Ollama tool calling. For each user turn:
@@ -117,6 +119,26 @@ Hello, Julian!
 Your name has been added to the README.md file.
 >
 ```
+
+## Tokenizer Demo
+
+Runnable tokenizer demo used in the workshop slides:
+
+```bash
+clojure -M -m token.demo "Clojure makes data explicit."
+```
+
+Example output:
+
+```text
+input: Clojure makes data explicit.
+chars: 28
+tokens: 7
+ids: (34 72013 627 4787 1238 23141 13)
+decoded: Clojure makes data explicit.
+```
+
+This is useful for showing that models operate on token IDs, not raw text.
 
 ## Test
 

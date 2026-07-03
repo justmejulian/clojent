@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 560" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#9399b2"/>
+    </marker>
+  </defs>
+
+  <!-- turn 1 -->
+  <text x="20" y="48" font-size="17" fill="#a6adc8">turn 1</text>
+  <rect x="20" y="60" width="56" height="40" rx="6" fill="#89b4fa" fill-opacity="0.15" stroke="#f9e2af" stroke-width="2"/>
+  <text x="48" y="86" text-anchor="middle" font-size="18" fill="#89b4fa">U1</text>
+  <line x1="88" y1="80" x2="366" y2="80" stroke="#9399b2" stroke-width="2.5" marker-end="url(#arr)"/>
+  <rect x="376" y="56" width="118" height="48" rx="10" fill="none" stroke="#cba6f7" stroke-width="2.5"/>
+  <text x="435" y="80" text-anchor="middle" font-size="19" fill="#cba6f7" font-weight="600">LLM</text>
+  <text x="435" y="98" text-anchor="middle" font-size="13" fill="#a6adc8">no state</text>
+
+  <!-- A1 response from LLM (turn 1) -->
+  <path d="M435,104 L435,150 L76,150" stroke="#9399b2" stroke-width="2.5" fill="none" marker-end="url(#arr)"/>
+  <rect x="20" y="130" width="56" height="40" rx="6" fill="#a6e3a1" fill-opacity="0.15" stroke="#a6e3a1" stroke-width="2"/>
+  <text x="48" y="156" text-anchor="middle" font-size="18" fill="#a6e3a1">A1</text>
+
+  <!-- turn 2 -->
+  <text x="20" y="212" font-size="17" fill="#a6adc8">turn 2</text>
+  <rect x="20" y="224" width="56" height="40" rx="6" fill="#89b4fa" fill-opacity="0.15" stroke="#89b4fa" stroke-width="2"/>
+  <text x="48" y="250" text-anchor="middle" font-size="18" fill="#89b4fa">U1</text>
+  <rect x="84" y="224" width="56" height="40" rx="6" fill="#a6e3a1" fill-opacity="0.15" stroke="#a6e3a1" stroke-width="2"/>
+  <text x="112" y="250" text-anchor="middle" font-size="18" fill="#a6e3a1">A1</text>
+  <rect x="148" y="224" width="56" height="40" rx="6" fill="#89b4fa" fill-opacity="0.15" stroke="#f9e2af" stroke-width="2"/>
+  <text x="176" y="250" text-anchor="middle" font-size="18" fill="#89b4fa">U2</text>
+  <line x1="216" y1="244" x2="366" y2="244" stroke="#9399b2" stroke-width="2.5" marker-end="url(#arr)"/>
+  <rect x="376" y="220" width="118" height="48" rx="10" fill="none" stroke="#cba6f7" stroke-width="2.5"/>
+  <text x="435" y="244" text-anchor="middle" font-size="19" fill="#cba6f7" font-weight="600">LLM</text>
+  <text x="435" y="262" text-anchor="middle" font-size="13" fill="#a6adc8">no state</text>
+
+  <!-- A2 response from LLM (turn 2) -->
+  <path d="M435,268 L435,322 L76,322" stroke="#9399b2" stroke-width="2.5" fill="none" marker-end="url(#arr)"/>
+  <rect x="20" y="302" width="56" height="40" rx="6" fill="#a6e3a1" fill-opacity="0.15" stroke="#a6e3a1" stroke-width="2"/>
+  <text x="48" y="328" text-anchor="middle" font-size="18" fill="#a6e3a1">A2</text>
+
+  <!-- turn 3 -->
+  <text x="20" y="376" font-size="17" fill="#a6adc8">turn 3</text>
+  <rect x="20" y="388" width="56" height="40" rx="6" fill="#89b4fa" fill-opacity="0.15" stroke="#89b4fa" stroke-width="2"/>
+  <text x="48" y="414" text-anchor="middle" font-size="18" fill="#89b4fa">U1</text>
+  <rect x="84" y="388" width="56" height="40" rx="6" fill="#a6e3a1" fill-opacity="0.15" stroke="#a6e3a1" stroke-width="2"/>
+  <text x="112" y="414" text-anchor="middle" font-size="18" fill="#a6e3a1">A1</text>
+  <rect x="148" y="388" width="56" height="40" rx="6" fill="#89b4fa" fill-opacity="0.15" stroke="#89b4fa" stroke-width="2"/>
+  <text x="176" y="414" text-anchor="middle" font-size="18" fill="#89b4fa">U2</text>
+  <rect x="212" y="388" width="56" height="40" rx="6" fill="#a6e3a1" fill-opacity="0.15" stroke="#a6e3a1" stroke-width="2"/>
+  <text x="240" y="414" text-anchor="middle" font-size="18" fill="#a6e3a1">A2</text>
+  <rect x="276" y="388" width="56" height="40" rx="6" fill="#89b4fa" fill-opacity="0.15" stroke="#f9e2af" stroke-width="2"/>
+  <text x="304" y="414" text-anchor="middle" font-size="18" fill="#89b4fa">U3</text>
+  <line x1="344" y1="408" x2="366" y2="408" stroke="#9399b2" stroke-width="2.5" marker-end="url(#arr)"/>
+  <rect x="376" y="384" width="118" height="48" rx="10" fill="none" stroke="#cba6f7" stroke-width="2.5"/>
+  <text x="435" y="408" text-anchor="middle" font-size="19" fill="#cba6f7" font-weight="600">LLM</text>
+  <text x="435" y="426" text-anchor="middle" font-size="13" fill="#a6adc8">no state</text>
+
+  <text x="260" y="510" text-anchor="middle" font-size="19" fill="#cdd6f4" font-style="italic">app resends the whole history, every turn</text>
+</svg>

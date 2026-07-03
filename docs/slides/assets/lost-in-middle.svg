@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 520" font-family="system-ui, -apple-system, sans-serif">
+  <!-- axes -->
+  <line x1="70" y1="50" x2="70" y2="420" stroke="#6c7086" stroke-width="2"/>
+  <line x1="70" y1="420" x2="445" y2="420" stroke="#6c7086" stroke-width="2"/>
+
+  <!-- y label -->
+  <text x="34" y="240" font-size="18" fill="#a6adc8" transform="rotate(-90 34 240)" text-anchor="middle">retrieval accuracy</text>
+
+  <!-- x ticks -->
+  <text x="85" y="448" font-size="18" fill="#a6adc8" text-anchor="middle">start</text>
+  <text x="255" y="448" font-size="18" fill="#a6adc8" text-anchor="middle">middle</text>
+  <text x="425" y="448" font-size="18" fill="#a6adc8" text-anchor="middle">end</text>
+  <text x="255" y="486" font-size="18" fill="#cdd6f4" text-anchor="middle">position of fact in context</text>
+
+  <!-- U-curve -->
+  <path d="M 85 105 C 160 125, 190 340, 255 345 C 320 350, 355 145, 425 120"
+        fill="none" stroke="#f9e2af" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- dip annotation -->
+  <line x1="255" y1="345" x2="255" y2="420" stroke="#f38ba8" stroke-width="2" stroke-dasharray="6 5"/>
+  <circle cx="255" cy="345" r="7" fill="#f38ba8"/>
+  <text x="255" y="312" font-size="18" fill="#f38ba8" text-anchor="middle" font-weight="600">worst recall</text>
+</svg>

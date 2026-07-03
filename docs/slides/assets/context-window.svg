@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 540" font-family="system-ui, -apple-system, sans-serif">
+  <!-- log-scale horizontal bars: width = (log10(tokens) - 3) / 3.301 * 400 -->
+
+  <text x="20" y="52" font-size="19" fill="#cdd6f4">older / small models</text>
+  <rect x="20" y="64" width="73" height="34" rx="6" fill="#f38ba8" fill-opacity="0.85"/>
+  <text x="103" y="88" font-size="18" fill="#f38ba8" font-weight="600">~4K</text>
+
+  <text x="20" y="162" font-size="19" fill="#cdd6f4">typical local (Qwen 3)</text>
+  <rect x="20" y="174" width="255" height="34" rx="6" fill="#94e2d5" fill-opacity="0.85"/>
+  <text x="285" y="198" font-size="18" fill="#94e2d5" font-weight="600">128K</text>
+
+  <text x="20" y="272" font-size="19" fill="#cdd6f4">Claude Haiku 4.5</text>
+  <rect x="20" y="284" width="279" height="34" rx="6" fill="#89b4fa" fill-opacity="0.85"/>
+  <text x="309" y="308" font-size="18" fill="#89b4fa" font-weight="600">200K</text>
+
+  <text x="20" y="382" font-size="19" fill="#cdd6f4">Gemini 2.5 Pro</text>
+  <rect x="20" y="394" width="400" height="34" rx="6" fill="#cba6f7" fill-opacity="0.85"/>
+  <text x="430" y="418" font-size="18" fill="#cba6f7" font-weight="600">2M</text>
+
+  <text x="20" y="500" font-size="16" fill="#a6adc8" font-style="italic">log scale — 2M is 500× the 4K bar · data: models.dev</text>
+</svg>

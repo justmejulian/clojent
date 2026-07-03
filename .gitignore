@@ -19,6 +19,8 @@ pom.xml
 .vscode/
 
 *.html
+node_modules/
+package-lock.json
 
 # Notebooks
 notebooks/.venv/

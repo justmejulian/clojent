@@ -1,0 +1,17 @@
+{
+  "name": "clojent-slides",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Marp slides for the LLMs & Coding Agents workshop",
+  "scripts": {
+    "start": "marp --serve .",
+    "watch": "marp --watch slides.md",
+    "preview": "marp --watch --preview slides.md",
+    "build": "marp slides.md -o slides.html",
+    "pdf": "marp --allow-local-files slides.md -o slides.pdf",
+    "pptx": "marp slides.md -o slides.pptx"
+  },
+  "devDependencies": {
+    "@marp-team/marp-cli": "^4.0.0"
+  }
+}
