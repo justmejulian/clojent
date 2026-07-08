@@ -355,9 +355,62 @@ Denied result is fed back to the LLM as a tool message — it sees `"User denied
 
 ---
 
-## MCP, skills & real agents
+## MCP — Model Context Protocol
 
-- MCP — modelcontextprotocol.io
-- Skills - agentskills.io
-- agents.md
-- Commands: `/clear` (blank slate) vs `/compact` (LLM summary)
+Tools in our agent: manually wired, bespoke.
+
+MCP: **open standard** so one tool implementation works everywhere.
+
+```
+Claude Code ──┐
+VS Code ext  ─┤── MCP server ── filesystem / git / DB / APIs
+Custom agent ─┘
+```
+
+- Server exposes `tools` + `resources` via JSON-RPC
+- Client discovers and calls them — same as our tool loop
+- modelcontextprotocol.io
+
+---
+
+## Skills
+
+Reusable agent **behaviors** packaged as markdown instructions.
+
+- Tools = functions the agent calls
+- Skills = *how* the agent behaves
+
+```
+/teach   → explains code with language-specific depth
+/caveman → ultra-compressed terse responses
+/review  → structured code review comments
+```
+
+- Install from agentskills.io or write your own `.md` file
+- Composed into the system prompt at invocation time
+
+---
+
+## AGENTS.md / CLAUDE.md
+
+Instruction file that lives in your repo.
+
+Tells the agent:
+- How to build and run the project
+- Code conventions and forbidden patterns
+- What tools exist and when to use them
+
+---
+
+## usw ...
+
+- `/clear` (blank slate) 
+- `/compact` (LLM summary)
+
+https://ccunpacked.dev/
+
+https://modelcontextprotocol.io/docs/getting-started/intro
+https://agentskills.io/home
+https://agents.md/
+
+https://pi.dev/docs/latest/usagepi.dev
