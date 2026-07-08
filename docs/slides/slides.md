@@ -270,7 +270,6 @@ Run Developer: `Open Agent Debug Logs` from the Command Palette.
 ![w:700](assets/agent-loop.svg)
 
 - Pass `tools` → model replies with `tool_calls`
-- No `:format "json"` — suppresses `tool_calls`
 
 ---
 
@@ -309,29 +308,56 @@ Then `read-file` / `write-file` / `edit-file` for safe explicit edits.
 
 ---
 
+## Permissions
+
+```
+User → [App] → LLM → tool_calls → [App] → Tools → filesystem / shell / web
+                 ↑                    ↑
+           decides WHAT           decides IF
+```
+
+LLM **requests** tool calls. App **executes** them. The gate is yours.
+
+---
+
+## Three layers of permission
+
+| Layer | Mechanism | Reliability |
+|-------|-----------|-------------|
+| Behavioral | System prompt: "ask before running bash" | Soft — LLM may comply |
+| Application gate | Intercept `tool_calls`, prompt human before executing | Hard — LLM can't bypass |
+| OS / sandbox | File permissions, containers, network rules | Hard — enforced by kernel |
+
+---
+
+## App gate
+
+```clojure
+(defn- confirm-tool-call [tool-name args]
+  (println (str "\n[permission] " tool-name " " args))
+  (print "Run? (y/n) > ") (flush)
+  (= "y" (clojure.string/trim (read-line))))
+```
+
+```clojure
+;; inside agentic-turn, before tools/run:
+result (if (not (confirm-tool-call fn-name args))
+         (str "User denied: " fn-name)
+         (try (tools/run fn-name args)
+              (catch Exception e (str "Tool error: " (.getMessage e)))))
+```
+
+Denied result is fed back to the LLM as a tool message — it sees `"User denied: bash"` and responds accordingly.
+
+---
+
 # Block 7 — Where this goes
 
 ---
 
 ## MCP, skills & real agents
 
-- **MCP** — tools in reusable servers, not hardcoded registries
-- ⚠️ More tools = worse lost-in-the-middle. Be picky.
-- **Context**: `/clear` (blank slate) vs `/compact` (LLM summary)
-- Real agents: streaming, sandboxing, sub-agents, planning
-- Claude Code, Cursor = same loop underneath
-
----
-
-## You built that
-
-**300 lines of code and three tools** — all the original *How to Build an Agent* needed. So did you.
-
-Take home:
-
-- This repo + checkpoint SHA table
-- README implementation guide
-
----
-
-# Questions
+- MCP — modelcontextprotocol.io
+- Skills - agentskills.io
+- agents.md
+- Commands: `/clear` (blank slate) vs `/compact` (LLM summary)

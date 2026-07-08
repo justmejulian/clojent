@@ -7,6 +7,13 @@
 
 (def exit-commands #{"quit" "exit"})
 
+(defn- confirm-tool-call
+  [tool-name args]
+  (println (str "\n[permission] " tool-name " " args))
+  (print "Run? (y/n) > ")
+  (flush)
+  (contains? #{"y" "yes"} (clojure.string/lower-case (clojure.string/trim (read-line)))))
+
 (defn system-message
   "Builds the system message that sets the assistant's persona."
   []
@@ -47,10 +54,12 @@
                            (let [fn-name (:name (:function tc))
                                  args    (:arguments (:function tc))
                                  _       (println "[calling tool]" fn-name args)
-                                 result  (try
-                                           (tools/run fn-name args)
-                                           (catch Exception e
-                                             (str "Tool error: " (.getMessage e))))]
+                                 result  (if (not (confirm-tool-call fn-name args))
+                                           (str "User denied: " fn-name)
+                                           (try
+                                             (tools/run fn-name args)
+                                             (catch Exception e
+                                               (str "Tool error: " (.getMessage e)))))]
                              (conj acc {:role "tool" :tool_name fn-name :content result})))
                          msgs'
                          tool-calls)]
